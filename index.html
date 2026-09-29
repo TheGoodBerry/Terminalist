@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Terminalist</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/main.css"></head><body>
+<canvas id="c"></canvas>
+<div id="hud">
+ <div class="cell"><b>MEMORY</b><span id="mem"></span><i class="bar"><u id="memb"></u></i></div>
+ <div class="cell"><b>POWER</b><span id="pow"></span><i class="bar"><u id="powb"></u></i></div>
+ <div class="cell wide"><b>OBJECTIVE</b><span id="obj"></span></div>
+ <div class="cell btns"><button id="bTerm">Terminal (T)</button><button id="bSave">Save</button><button id="bLoad">Load</button><button id="bReset">Reset</button></div>
+</div>
+<div id="build"></div>
+<div id="info" hidden><h3 id="ititle"></h3><div id="istats"></div><button id="upg"></button></div>
+<div id="term" hidden>
+ <div class="th">TERMINALIST // CODE EDITOR <span id="pstat">IDLE</span></div>
+ <div class="ed"><pre id="gut">1</pre><textarea id="code" spellcheck="false">produce 8 bits
+wait 1
+repeat</textarea></div>
+ <div class="tb"><button id="bRun">RUN</button><button id="bStop">STOP</button></div>
+ <pre id="out"></pre>
+</div>
+<div id="toast"></div>
+<div id="help">WASD move · click build · drag to lay lines · R rotate · right-click remove · scroll zoom · 1-6 pick tool · Esc cancel</div>
+<script src="js/utils.js"></script><script src="js/machines.js"></script><script src="js/scripting.js"></script>
+<script src="js/save.js"></script><script src="js/game.js"></script><script src="js/main.js"></script>
+</body></html>
