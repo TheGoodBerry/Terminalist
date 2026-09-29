@@ -20,7 +20,7 @@ function remove(m){grid[m.y*W+m.x]=null;ms.splice(ms.indexOf(m),1);deposit(Math.
 // ---- transport ----
 const lspd=()=>3*(1+st.lvLine),SPACING=.4;
 function acc(tg,r,src){
- if(tg.t=='line'){if(src.t=='line'&&(tg.r+2)%4==src.r)return false;if(tg.t=='line'&&src.x+DIR[src.r][0]==tg.x&&tg.x+DIR[tg.r][0]==src.x&&src.t=='line')return false;return tg.q.length<6&&(!tg.q.length||tg.q.at(-1).t>=SPACING)}
+ if(tg.t=='line'){if(src.t=='line'&&(tg.r+2)%4==src.r)return false;return tg.q.length<6&&(!tg.q.length||tg.q.at(-1).t>=SPACING)}
  const d=M[tg.t];if(d.cap)return st.used+R[r].s<=cap();return r===d.inR&&tg.buf<d.inN*2}
 function give(tg,p){const d=M[tg.t];
  if(tg.t=='line'){p.t=0;tg.q.push(p)}
