@@ -21,3 +21,4 @@ button:hover:not(:disabled){border-color:var(--g);color:var(--g)}button:disabled
 #toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#0f2a1c;border:1px solid var(--g);padding:6px 14px;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}#help{position:fixed;bottom:64px;left:8px;color:#4a6;font-size:11px}
 @media(max-width:700px){#term{width:calc(100% - 16px)}#help{display:none}#build{flex-wrap:wrap;width:96%}}
+#build{flex-wrap:wrap;justify-content:center;max-width:94vw}#build button{min-width:84px;font-size:11px;padding:3px 6px}
