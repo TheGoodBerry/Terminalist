@@ -21,7 +21,7 @@ S.compile=src=>{
  if(ok&&stk.length){err(ins[stk.at(-1).i].n,'This "if" is never closed with "end".')}
  return ok?ins:null};
 S.stop=(m)=>{if(S.running){S.running=false;log(m||'Program stopped.')}};
-S.run=src=>{const p=S.compile(src);if(!p)return;S.prog=p;S.pc=0;S.timer=0;S.w=false;S.running=true;S.made=0;S.usesIf=p.some(i=>i.op=='if');log('Program running...')};
+S.run=src=>{const p=S.compile(src);if(!p)return;S.prog=p;S.pc=0;S.timer=0;S.w=false;S.running=true;S.made=0;S.usesIf=p.some(i=>i.op=='if');S.usesThr=p.some(i=>i.op=='throttle');log('Program running...')};
 S.tick=dt=>{
  if(!S.running)return;if(S.timer>0){S.timer-=dt;return}
  let steps=0;
