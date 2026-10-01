@@ -17,7 +17,7 @@ function fits(t,x,y){const d=M[t];if(x<0||y<0||x+d.w>W||y+d.h>W)return false;for
 const anc=(k,x,y)=>[x-((M[k].w-1)>>1),y-((M[k].h-1)>>1)];
 function place(t,x,y,r,free){const d=M[t];if(!d||!st.unl[t]||!fits(t,x,y))return;
  if(!free&&!spend(d.cost)){G.toast('Not enough memory: need '+T.fmt(d.cost));return}
- const m={t,x,y,r,k:0,hold:null,l:0,buf:0,prog:0,work:0,outq:0,q:[],st:'IDLE',fc:0,pc:0,ft:0,flow:0,pr:0};for(let j=0;j<d.h;j++)for(let i=0;i<d.w;i++)grid[(y+j)*W+x+i]=m;ms.push(m);m.born=performance.now()/1000;T.fx.emit((x+d.w/2)*S,(y+d.h/2)*S,10+d.w*4,d.c,90,.6,3);return m}
+ const m={t,x,y,r,k:0,hold:null,rr:0,o:null,ot:0,l:0,buf:0,prog:0,work:0,outq:0,q:[],st:'IDLE',fc:0,pc:0,ft:0,flow:0,pr:0};for(let j=0;j<d.h;j++)for(let i=0;i<d.w;i++)grid[(y+j)*W+x+i]=m;ms.push(m);m.born=performance.now()/1000;T.fx.emit((x+d.w/2)*S,(y+d.h/2)*S,10+d.w*4,d.c,90,.6,3);return m}
 function remove(m){const d=M[m.t];for(let j=0;j<d.h;j++)for(let i=0;i<d.w;i++)grid[(m.y+j)*W+m.x+i]=null;ms.splice(ms.indexOf(m),1);deposit(Math.floor(M[m.t].cost/2));if(sel==m)sel=null;T.fx.emit((m.x+d.w/2)*S,(m.y+d.h/2)*S,14,'#ff4d4d',100,.6,3)}
 // ---- transport ----
 const lmax=()=>3+(st.skills.fiber?3:0)+(st.skills.quantum?3:0),lspd=()=>3*(1+st.lvLine),SPACING=.4;
@@ -31,9 +31,12 @@ function give(tg,p){const d=M[tg.t];
  else tg.buf+=p.n}
 function fpos(m){const d=M[m.t],r=m.r;return[r==0?m.x+d.w:r==2?m.x-1:m.x+(d.w>>1),r==1?m.y+d.h:r==3?m.y-1:m.y+(d.h>>1)]}
 function front(m){const p=fpos(m);return at(p[0],p[1])}
+// A line whose rear touches the side of another line is a branch: the first line then splits packets between its front and the branch(es).
+const br=(m,nb)=>nb&&nb.t=='line'&&nb!==m&&nb.x-DIR[nb.r][0]==m.x&&nb.y-DIR[nb.r][1]==m.y&&!(m.x-DIR[m.r][0]==nb.x&&m.y-DIR[m.r][1]==nb.y);
+function outs(m){const o=[],f=front(m);if(f)o.push(f);for(let d=0;d<4;d++){if(d==m.r)continue;const nb=at(m.x+DIR[d][0],m.y+DIR[d][1]);if(br(m,nb))o.push(nb)}return o}
 function tickLine(m,dt){
  const sp=lspd();for(let i=0;i<m.q.length;i++){const p=m.q[i],lim=i?m.q[i-1].t-SPACING:1;p.t=Math.min(p.t+dt*sp,lim)}
- const p=m.q[0];if(p&&p.t>=1){const tg=front(m);if(tg&&acc(tg,p.r,m)){m.fc+=R[p.r].v*p.n;m.pc++;give(tg,m.q.shift())}}
+ const p=m.q[0];if(p&&p.t>=1){m.ot-=dt;if(!m.o||m.ot<=0){m.o=outs(m);m.ot=.3}const c=m.o;for(let i=0;i<c.length;i++){const tg=c[(m.rr+i)%c.length];if(acc(tg,p.r,m)){m.fc+=R[p.r].v*p.n;m.pc++;give(tg,m.q.shift());m.rr=(m.rr+i+1)%c.length;break}}}
  m.ft+=dt;if(m.ft>=1){m.flow=m.fc/m.ft;m.pr=m.pc/m.ft;m.fc=m.pc=m.ft=0}
  m.st=m.pr/(sp/SPACING)>.9?'NEAR CAPACITY':m.q.length?'FLOWING':'IDLE'}
 function tickMachine(m,dt){const d=M[m.t];
@@ -155,13 +158,13 @@ const SC={PROCESSING:'#39ff88',GENERATING:'#ff9a3c',ACTIVE:'#ffd23f',IDLE:'#556'
 function arrow(x,y,r,s,c){cx.save();cx.translate(x,y);cx.rotate(r*Math.PI/2);cx.fillStyle=c;cx.beginPath();cx.moveTo(s,0);cx.lineTo(-s*.6,-s*.7);cx.lineTo(-s*.6,s*.7);cx.fill();cx.restore()}
 // Lines auto-shape: arms for the output side and every neighbour feeding in -> straight, turn, T (3-way) or cross (4-way).
 function drawLine(m,t){const px=m.x*S+S/2,py=m.y*S+S/2,arms=[0,0,0,0];arms[m.r]=1;let n=1;
- for(let d=0;d<4;d++){if(d==m.r)continue;const dd=DIR[d],nb=at(m.x+dd[0],m.y+dd[1]);if(nb&&nb!==m&&front(nb)===m){arms[d]=1;n++}}
+ const out=[0,0,0,0];out[m.r]=1;for(let d=0;d<4;d++){if(d==m.r)continue;const dd=DIR[d],nb=at(m.x+dd[0],m.y+dd[1]);if(nb&&nb!==m&&front(nb)===m){arms[d]=1;n++}else if(br(m,nb)){arms[d]=1;out[d]=1;n++}}
  if(n==1)arms[(m.r+2)%4]=1;
  const col=m.q.length>=3?'#ff4d4d':m.st=='NEAR CAPACITY'?'#ff9a3c':'#1fc8e8';
  cx.save();cx.translate(px,py);
  for(let d=0;d<4;d++)if(arms[d]){cx.save();cx.rotate(d*Math.PI/2);cx.fillStyle='#0f2a33';cx.fillRect(-6,-6,S/2+6,12);
   cx.globalAlpha=.2;cx.strokeStyle=col;cx.lineWidth=8;cx.beginPath();cx.moveTo(0,0);cx.lineTo(S/2,0);cx.stroke();
-  cx.globalAlpha=.9;cx.lineWidth=2.5;cx.setLineDash([6,6]);cx.lineDashOffset=d==m.r?-t*30:t*30;cx.beginPath();cx.moveTo(0,0);cx.lineTo(S/2,0);cx.stroke();cx.restore()}
+  cx.globalAlpha=.9;cx.lineWidth=2.5;cx.setLineDash([6,6]);cx.lineDashOffset=out[d]?-t*30:t*30;cx.beginPath();cx.moveTo(0,0);cx.lineTo(S/2,0);cx.stroke();cx.restore()}
  cx.setLineDash([]);cx.globalAlpha=1;
  if(n>=3){cx.fillStyle='#0f2a33';cx.strokeStyle=col;cx.lineWidth=2;cx.beginPath();cx.arc(0,0,n==3?8:10,0,7);cx.fill();cx.stroke();cx.fillStyle=col;cx.beginPath();cx.arc(0,0,3+Math.sin(t*6),0,7);cx.fill()}
  cx.restore();arrow(px+DIR[m.r][0]*8,py+DIR[m.r][1]*8,m.r,4,'#bff')}
@@ -223,7 +226,7 @@ function ui(){
  {const t=$('tree');if(!t.hidden&&t.dataset.k!=st.sp+Object.keys(st.skills).join())tree();const g=$('guide');if(!g.hidden&&g.dataset.o!=st.obj)guide()}
  const i=$('info');i.hidden=!sel;
  if(sel){const m=sel,d=M[m.t];let s='',u;
-  if(m.t=='line'){const mx=lspd()/SPACING;s=`Throughput: ${m.pr.toFixed(1)} / ${mx.toFixed(1)} pkts/s<br>Moving: ${m.flow.toFixed(1)} bits/s<br>Utilization: ${(m.pr/mx*100|0)}%<br>Status: ${m.st}<br>Line speed MK ${st.lvLine+1} (all lines)`;u=st.lvLine<lmax()?'Upgrade all lines: '+T.fmt(lvCost()):(st.lvLine<9?'Max level (see Skills for more)':'Max level')}
+  if(m.t=='line'){const mx=lspd()/SPACING;s=`Throughput: ${m.pr.toFixed(1)} / ${mx.toFixed(1)} pkts/s<br>Moving: ${m.flow.toFixed(1)} bits/s<br>Utilization: ${(m.pr/mx*100|0)}%<br>Status: ${m.st}<br>Line speed MK ${st.lvLine+1} (all lines)<br>Outputs: ${(m.o||[]).length}`;u=st.lvLine<lmax()?'Upgrade all lines: '+T.fmt(lvCost()):(st.lvLine<9?'Max level (see Skills for more)':'Max level')}
   else{s=`Status: ${m.st}<br>Level: MK ${m.l+1}<br>`;if(d.out)s+=`Output: ${(d.outN*(1+m.l)/d.time).toFixed(1)} ${d.out}(s)/s<br>`;if(d.inR)s+=`Input: ${d.inN} ${d.inR}s/cycle (buffer ${m.buf})<br>`;
    if(d.pw>0)s+=`Power: ${(d.pw*(1+.5*m.l)).toFixed(2)} kW<br>`;if(d.pw<0)s+=`Supplies: ${-d.pw*(1+m.l)} kW<br>`;if(d.cap)s+=`Capacity: ${T.fmt(d.cap*4**m.l)}<br>`;
    u=m.l<4?'Upgrade: '+T.fmt(lvCost(m)):'Max level'}
