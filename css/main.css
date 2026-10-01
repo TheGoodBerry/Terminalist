@@ -22,3 +22,9 @@ button:hover:not(:disabled){border-color:var(--g);color:var(--g)}button:disabled
 #toast.show{opacity:1}#help{position:fixed;bottom:64px;left:8px;color:#4a6;font-size:11px}
 @media(max-width:700px){#term{width:calc(100% - 16px)}#help{display:none}#build{flex-wrap:wrap;width:96%}}
 #build{flex-wrap:wrap;justify-content:center;max-width:94vw}#build button{min-width:84px;font-size:11px;padding:3px 6px}
+#tree,#guide{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:#0b1319f5;border:1px solid var(--ln);max-width:94vw;max-height:70vh;overflow:auto;z-index:5}
+#tree .cols{display:flex;gap:10px;padding:10px}#tree .cols>div{display:flex;flex-direction:column;gap:6px;width:175px}
+.sk{text-align:left;white-space:normal}.sk small{display:block;color:#7a9;margin-top:2px}.sk em{display:block;color:var(--o);font-style:normal;font-size:11px}
+.sk.own{border-color:var(--g);color:var(--g);background:#0f2a1c}.sk.ok{border-color:var(--c)}.sk.lock{opacity:.5}
+#guide{width:480px}.gb{padding:6px 14px 12px}.gb h4{color:var(--o);margin:10px 0 4px;font-weight:500}.gb p{margin:0 0 6px}.gb code{color:var(--g);display:block;background:#05090c;padding:6px;margin:4px 0}
+.th button,.cell b button{padding:0 6px;font-size:11px;margin-left:6px}.pulse{border-color:var(--o)!important;color:var(--o)!important}
